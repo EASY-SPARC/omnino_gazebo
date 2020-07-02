@@ -5,6 +5,6 @@ joint_state_controller:
 wheels_velocity_controller:
     type: velocity_controllers/JointGroupVelocityController
     joints:
+    - rim_back_joint
     - rim_left_joint
     - rim_right_joint
-    - rim_back_joint
