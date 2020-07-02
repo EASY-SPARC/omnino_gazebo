@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<robot
+	xmlns:xacro="http://www.ros.org/wiki/xacro"
+	name="omnino">
+	<xacro:include filename="$(find omnino)/xacro/rim.urdf.xacro"/>
+	<xacro:include filename="$(find omnino)/xacro/layer1.urdf.xacro"/>
+	<xacro:include filename="$(find omnino)/xacro/socket.urdf.xacro"/>
+	<xacro:property name="base_r" value="${0.063}" />
+	<link name="origin_link"/>
+	<link name="base_link">
+		<inertial>
+			<mass value="0.7862944645"/>
+			<inertia
+				ixx="0.0002035985530754" 
+				ixy="0"
+				ixz="0"
+				iyy="0.0002035985530754"
+				iyz="0"
+				izz="0.0003945961663220"
+			/>
+		</inertial>
+		<visual>
+			<geometry>
+				<mesh filename="package://omnino/mesh/chassis_hull.dae" scale="0.001 0.001 0.001"/>
+			</geometry>
+		</visual>
+		<collision>
+			<geometry>
+				<mesh filename="package://omnino/mesh/chassis_hull.dae" scale="0.001 0.001 0.001"/>
+			</geometry>
+		</collision>
+	</link>
+	<joint
+		name="base_joint"
+		type="fixed">
+		<parent link="origin_link" />
+		<child link="base_link" />
+		<origin xyz="0 0 0.0175" />
+	</joint>
+
+	<xacro:layer1
+		height="0.025"/>
+	<xacro:rim_macro
+		name="left"
+		xyz="${-base_r*cos(radians(30))} ${base_r*sin(radians(30))} 0"
+		rpy="${pi/2} 0 ${pi/3}"/>
+	<xacro:rim_macro
+		name="back"
+		xyz="0 ${-base_r} 0"
+		rpy="${pi/2} 0 ${pi}"/>
+	<xacro:rim_macro
+		name="right"
+		xyz="${base_r*cos(radians(30))} ${base_r*sin(radians(30))} 0"
+		rpy="${pi/2} 0 ${-pi/3}"/>
+	<xacro:socket
+		name="front"
+		xyz="${(base_r-0.006)*sin(radians(0))} ${(base_r-0.006)*cos(radians(0))} 0.028"
+		rpy="0 0 ${0}"/>
+	<xacro:socket
+		name="back_right"
+		xyz="${(base_r-0.006)*sin(radians(120))} ${(base_r-0.006)*cos(radians(120))} 0.028"
+		rpy="0 0 ${radians(-120)}"/>
+	<xacro:socket
+		name="back_left"
+		xyz="${(base_r-0.006)*sin(radians(-120))} ${(base_r-0.006)*cos(radians(-120))} 0.028"
+		rpy="0 0 ${radians(120)}"/>
+	<gazebo reference="base_link">
+		<material>Gazebo/Orange</material>
+	</gazebo>
+	<gazebo>
+		<plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+		</plugin>
+	</gazebo>
+
+</robot>

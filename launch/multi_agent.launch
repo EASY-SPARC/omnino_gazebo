@@ -1,0 +1,70 @@
+<launch>
+	<arg name="debug" default="false"/>
+	<arg name="gui" default="true"/>
+	<arg name="headless" default="false"/>
+	<arg name="paused" default="false"/>
+	<arg name="use_sim_time" default="true"/>
+	<include file="$(find gazebo_ros)/launch/empty_world.launch">
+		<arg name="debug" value="$(arg debug)"/>
+		<arg name="gui" value="$(arg gui)"/>
+		<arg name="paused" value="$(arg paused)"/>
+		<arg name="use_sim_time" value="$(arg use_sim_time)"/>
+		<arg name="headless" value="$(arg headless)"/>
+		<arg name="world_name" value="worlds/empty.world"/>
+	</include>
+
+	<!--spawm agent 1-->
+
+	<param name="robot_1/robot_description" command="$(find xacro)/xacro '$(find omnino)/xacro/main.urdf.xacro'"/>
+
+	<node ns="robot_1" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 0 -y 0 -Y 0 -param robot_description -model robot_1"/>
+
+	<rosparam ns="robot_1" command="load" file="$(find omnino)/config/joint_velocity.yaml" />
+
+	<node
+		ns="robot_1"
+		name="controller_spawner"
+		pkg="controller_manager"
+		type="spawner"
+		respawn="false"
+		output="screen"
+		args="joint_state_controller
+		wheels_velocity_controller"
+	/>
+	<node
+		ns="robot_1"
+		name="odometry"
+		pkg="omnino"
+		type="omnino_odometry"
+		output="screen"
+		args="robot_1"
+	/>
+
+	<!--spawm agent 2-->
+
+	<param name="robot_2/robot_description" command="$(find xacro)/xacro '$(find omnino)/xacro/main.urdf.xacro'"/>
+
+	<node ns="robot_2" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 1 -y 1 -Y 1 -param robot_description -model robot_2"/>
+
+	<rosparam ns="robot_2" command="load" file="$(find omnino)/config/joint_velocity.yaml" />
+
+	<node
+		ns="robot_2"
+		name="controller_spawner"
+		pkg="controller_manager"
+		type="spawner"
+		respawn="false"
+		output="screen"
+		args="joint_state_controller
+		wheels_velocity_controller"
+	/>
+	<node
+		ns="robot_2"
+		name="odometry"
+		pkg="omnino"
+		type="omnino_odometry"
+		output="screen"
+		args="robot_2"
+	/>
+
+</launch>

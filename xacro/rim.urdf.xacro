@@ -1,0 +1,99 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<xacro:include filename="$(find omnino)/xacro/roller.urdf.xacro"/>
+
+	<xacro:macro
+		name="rim_macro"
+		params="name xyz rpy">
+		<link name="rim_${name}_link">
+			<inertial>
+				<origin xyz="0 0 -0.000343"/>
+				<mass value="0.00835758"/>
+				<inertia
+					ixx="6.63684e-07"
+					ixy="0"
+					ixz="0"
+					iyy="6.63684e-07"
+					iyz="0"
+					izz="9.40333e-07"/>
+			</inertial>
+			<visual>
+				<geometry>
+					<mesh filename="package://omnino/mesh/rim.stl"/>
+				</geometry>
+			</visual>
+			<collision>
+				<geometry>
+					<cylinder length="0.0234" radius="0.0175"/>
+				</geometry>
+			</collision>
+		</link>
+		<gazebo reference="rim_${name}_link">
+    		<mu1>0.0</mu1>
+    		<mu2>1.0</mu2>
+			<material>Gazebo/DarkGrey</material>
+			<fdir1>0 0 1.0</fdir1>
+		</gazebo>
+		<joint
+			name="rim_${name}_joint"
+			type="continuous">
+			<parent link="base_link" />
+			<child link="rim_${name}_link" />
+			<axis xyz="0 0 1"/>
+			<origin
+				xyz="${xyz}"
+				rpy="${rpy}"/>
+		</joint>
+		<xacro:roller_macro
+			parent="${name}"
+			name="e"
+			xyz="0.01355 0 0.0055"
+			rpy="-1.570796326794896 0 0"/>
+		<xacro:roller_macro
+			parent="${name}"
+			name="ne"
+			xyz="0.00958129689 0.00958129689 -0.0055"
+			rpy="-1.570796326794896 0 0.7853981633974483"/>
+		<xacro:roller_macro
+			parent="${name}"
+			name="n"
+			xyz="0 0.01355 0.0055"
+			rpy="-1.570796326794896 0 1.570796326794896"/>
+		<xacro:roller_macro
+			parent="${name}"
+			name="nw"
+			xyz="-0.00958129689 0.00958129689 -0.0055"
+			rpy="-1.570796326794896 0 2.356194490192345"/>
+		<xacro:roller_macro
+			parent="${name}"
+			name="w"
+			xyz="-0.01355 0 0.0055"
+			rpy="-1.570796326794896 0 3.141592653589793"/>
+		<xacro:roller_macro
+			parent="${name}"
+			name="sw"
+			xyz="-0.00958129689 -0.00958129689 -0.0055"
+			rpy="-1.570796326794896 0 -2.356194490192345"/>
+		<xacro:roller_macro
+			parent="${name}"
+			name="s"
+			xyz="0 -0.01355 0.0055"
+			rpy="-1.570796326794896 0 -1.570796326794896"/>
+		<xacro:roller_macro
+			parent="${name}"
+			name="se"
+			xyz="0.00958129689 -0.00958129689 -0.0055"
+			rpy="-1.570796326794896 0 -0.7853981633974483"/>
+		<transmission name="rim_${name}_transmission">
+			<type>transmission_interface/SimpleTransmission</type>
+			<joint name="rim_${name}_joint">
+				<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+			</joint>
+			<actuator name="rim_${name}_motor">
+				<hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+				<mechanicalReduction>1</mechanicalReduction>
+			</actuator>
+		</transmission>
+	</xacro:macro>
+</robot>

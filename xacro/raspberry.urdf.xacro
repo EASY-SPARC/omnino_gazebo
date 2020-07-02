@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+	<xacro:macro
+		name="raspberry"
+		params="height move_x">
+		<link name="raspberry_link">
+			<inertial>
+				<mass value="0.00113845"/>
+				<inertia
+					ixx="2.53776e-08"
+					ixy="0"
+					ixz="0"
+					iyy="2.53776e-08"
+					iyz="0"
+					izz="1.47666e-08"/>
+			</inertial>
+			<visual>
+				<geometry>
+					<mesh filename="package://omnino/mesh/raspberry.dae" scale="1 1 1"/>
+					<!--cylinder length="0.1" radius="0.10"/-->
+				</geometry>
+			</visual>
+			<!--collision>
+				<geometry>
+					<mesh filename="package://omnino/mesh/power.stl" scale="0.001 0.001 0.001"/>
+				</geometry>
+			</collision-->
+		</link>
+		<gazebo reference="raspberry_link">
+			<visual>  
+    			<material>  
+      				<ambient>0.0 0.2 0.0 1.0</ambient>  
+      				<diffuse>0.0 0.4 0.0 1.0</diffuse>  
+      				<specular>0.0 0.4 0.0 1.0</specular>  
+      				<emissive>0.0 0.2 0.0 1.0</emissive>  
+    			</material>  
+  			</visual>
+		</gazebo>
+		<joint
+			name="raspberry_joint"
+			type="fixed">
+			<parent link="layer2_link"/>
+			<child link="raspberry_link"/>
+			<origin xyz="${-0.0022+move_x} -0.0009 ${0.0115+height}" />
+		</joint>
+	</xacro:macro>
+</robot>

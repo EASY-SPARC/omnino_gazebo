@@ -1,0 +1,43 @@
+<?xml version="1.0" ?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+	<xacro:include filename="$(find omnino)/xacro/layer2.urdf.xacro"/>
+	<xacro:macro
+		name="layer1"
+		params="height">
+		<link name="layer1_link">
+			<inertial>
+				<mass value="0.00113845"/>
+				<inertia
+					ixx="2.53776e-08"
+					ixy="0"
+					ixz="0"
+					iyy="2.53776e-08"
+					iyz="0"
+					izz="1.47666e-08"/>
+			</inertial>
+			<visual>
+				<geometry>
+					<mesh filename="package://omnino/mesh/power.dae" scale="0.001 0.001 0.001"/>
+					<!--cylinder length="0.1" radius="0.10"/-->
+				</geometry>
+			</visual>
+			<!--collision>
+				<geometry>
+					<mesh filename="package://omnino/mesh/power.stl" scale="0.001 0.001 0.001"/>
+				</geometry>
+			</collision-->
+		</link>
+		<gazebo reference="layer1_link">
+			<material>Gazebo/Orange</material>
+		</gazebo>
+		<joint
+			name="layer1_joint"
+			type="fixed">
+			<parent link="base_link"/>
+			<child link="layer1_link"/>
+			<origin xyz="0 0 ${0.0115+height}" />
+		</joint>
+		<xacro:layer2
+			height="0.025"/>
+	</xacro:macro>
+</robot>
