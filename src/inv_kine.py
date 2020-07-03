@@ -21,8 +21,8 @@ rospy.init_node('inv_kine')
 
 robot = int(sys.argv[1])
 
-rospy.Subscriber('/robot_'+ robot + '/cmd_vel', Twist, cb)
+rospy.Subscriber('/robot_'+ str(robot) + '/cmd_vel', Twist, cb)
 
-pub = rospy.Publisher('/robot_'+ robot + '/wheels_velocity_controller/command', Float64MultiArray, queue_size=10)
+pub = rospy.Publisher('/robot_'+ str(robot) + '/wheels_velocity_controller/command', Float64MultiArray, queue_size=10)
 
 rospy.spin()

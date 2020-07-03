@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch>
 	<arg name="debug" default="false"/>
 	<arg name="gui" default="true"/>
@@ -17,7 +18,8 @@
 
 	<param name="robot_1/robot_description" command="$(find xacro)/xacro '$(find omnino)/xacro/main.urdf.xacro'"/>
 
-	<node ns="robot_1" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 0 -y 0 -Y 0 -param robot_description -model robot_1"/>
+	<node name="inv_kine" pkg="omnino" type="inv_kine.py" output="screen" args="1"/>
+    <node ns="robot_1" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 0 -y 0 -Y 0 -param robot_description -model robot_1"/>
 
 	<rosparam ns="robot_1" command="load" file="$(find omnino)/config/joint_velocity.yaml" />
 
@@ -39,4 +41,5 @@
 		output="screen"
 		args="robot_1"
 	/>
+	
 </launch>
