@@ -35,7 +35,7 @@
 		type="fixed">
 		<parent link="origin_link" />
 		<child link="base_link" />
-		<origin xyz="0 0 0.0175" />
+		<origin xyz="0 0 0.0175" rpy="0 0 ${-pi/2}"/>
 	</joint>
 
 	<xacro:layer1
