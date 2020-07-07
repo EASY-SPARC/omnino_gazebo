@@ -12,8 +12,8 @@ robot = sys.argv[3]                                                         #rob
 def cb_odom(msg):
     robot_coordinates[0] = msg.pose.pose.position.x
     robot_coordinates[1] = msg.pose.pose.position.y
-    ######### Assuming unaltered orientation as pi/2 #########
-    robot_coordinates[2] = -np.pi/2
+    ######### Assuming fixed orientation as 0 #########
+    robot_coordinates[2] = 0
     
 #############################
 ###### VELOCITY CONTROL #####
