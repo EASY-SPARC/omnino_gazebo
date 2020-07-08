@@ -9,6 +9,9 @@ from nav_msgs.msg import Odometry
 goal = np.array([float(sys.argv[1]), float(sys.argv[2])])                   #goal are given global coordinates
 robot = sys.argv[3]                                                         #robot is used as identification in topics and other functionalities
 
+Ts = 0.1
+vel_max = 1
+
 def cb_odom(msg):
     robot_coordinates[0] = msg.pose.pose.position.x
     robot_coordinates[1] = msg.pose.pose.position.y
@@ -43,9 +46,15 @@ pub = rospy.Publisher('/robot_' + robot + '/cmd_vel', Twist, queue_size=10)
 
 while not rospy.is_shutdown():
     vel_controll(goal, robot_coordinates, K_p)
+    
+    vel_scalar = np.sqrt(robot_vel.linear.x**2 + robot_vel.linear.y**2)
+    if vel_scalar > vel_max:
+        robot_vel.linear.x = vel_max*robot_vel.linear.x/vel_scalar
+        robot_vel.linear.y = vel_max*robot_vel.linear.y/vel_scalar
+    
     pub.publish(robot_vel)
+    rospy.sleep(Ts)
 
-rospy.spin()
 
 #data = rospy.wait_for_message('/robot_'+robot+'/odom', Odometry)
 
