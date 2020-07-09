@@ -24,16 +24,18 @@ def cb_odom(msg):
 def vel_controll(goal, robot_coordinates, K_p):
     error_x = goal[0] - robot_coordinates[0]                                #coordinate errors between robot location and goal
     error_y = goal[1] - robot_coordinates[1]
-    theta = robot_coordinates[2]                                            #robot orientation
-    robot_vel.linear.x = K_p*(error_x*np.cos(-theta) - error_y*np.sin(-theta))#velocity is given proportional to the error
-    robot_vel.linear.y = K_p*(error_x*np.sin(-theta) + error_y*np.cos(-theta))#and rotated to robot's frame
+    theta = -robot_coordinates[2]                                           #robot orientation
+    robot_vel.linear.x = K_p*(error_x*np.cos(theta) - error_y*np.sin(theta))#velocity is given proportional to the error
+    robot_vel.linear.y = K_p*(error_x*np.sin(theta) + error_y*np.cos(theta))#and rotated to robot's frame
+    robot_vel.angular.z = K_p*(theta)                                       #adjusting orientation by error between robot and global frame
 
 #############################
 ###### WORLD VARIABLES ######
 #############################
 robot_coordinates = np.zeros(3)                                             #Robot's global location and orientation
 robot_vel = Twist()                                                         #Velocity in robot's frame
-K_p = 0.5                                                                   #Proportional gain used in velocity controll
+K_p = 0.5                                                                   #Proportional gain used in planar velocity controll
+K_o = 0.1                                                                   #Proportional gain used in orientation velocity controll
 
 #############################
 ###### PREPARING ROSS #######
