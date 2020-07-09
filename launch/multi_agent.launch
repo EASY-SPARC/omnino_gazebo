@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <launch>
 	<arg name="debug" default="false"/>
 	<arg name="gui" default="true"/>
@@ -17,7 +18,9 @@
 
 	<param name="robot_1/robot_description" command="$(find xacro)/xacro '$(find omnino)/xacro/main.urdf.xacro'"/>
 
-	<node ns="robot_1" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 0 -y 0 -Y 0 -param robot_description -model robot_1"/>
+	<node name="inv_kine_1" pkg="omnino" type="inv_kine.py" output="screen" args="1"/>
+
+	<node ns="robot_1" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x -1 -y 0 -Y 0 -param robot_description -model robot_1"/>
 
 	<rosparam ns="robot_1" command="load" file="$(find omnino)/config/joint_velocity.yaml" />
 
@@ -44,7 +47,9 @@
 
 	<param name="robot_2/robot_description" command="$(find xacro)/xacro '$(find omnino)/xacro/main.urdf.xacro'"/>
 
-	<node ns="robot_2" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 1 -y 1 -Y 1 -param robot_description -model robot_2"/>
+	<node name="inv_kine_2" pkg="omnino" type="inv_kine.py" output="screen" args="2"/>
+
+	<node ns="robot_2" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 0 -y -1 -Y 0 -param robot_description -model robot_2"/>
 
 	<rosparam ns="robot_2" command="load" file="$(find omnino)/config/joint_velocity.yaml" />
 
@@ -65,6 +70,64 @@
 		type="omnino_odometry"
 		output="screen"
 		args="robot_2"
+	/>
+
+	<!--spawm agent 3-->
+
+	<param name="robot_3/robot_description" command="$(find xacro)/xacro '$(find omnino)/xacro/main.urdf.xacro'"/>
+
+	<node name="inv_kine_3" pkg="omnino" type="inv_kine.py" output="screen" args="3"/>
+
+	<node ns="robot_3" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 1 -y 0 -Y 0 -param robot_description -model robot_3"/>
+
+	<rosparam ns="robot_3" command="load" file="$(find omnino)/config/joint_velocity.yaml" />
+
+	<node
+		ns="robot_3"
+		name="controller_spawner"
+		pkg="controller_manager"
+		type="spawner"
+		respawn="false"
+		output="screen"
+		args="joint_state_controller
+		wheels_velocity_controller"
+	/>
+	<node
+		ns="robot_3"
+		name="odometry"
+		pkg="omnino"
+		type="omnino_odometry"
+		output="screen"
+		args="robot_3"
+	/>
+
+	<!--spawm agent 4-->
+
+	<param name="robot_4/robot_description" command="$(find xacro)/xacro '$(find omnino)/xacro/main.urdf.xacro'"/>
+
+	<node name="inv_kine_4" pkg="omnino" type="inv_kine.py" output="screen" args="4"/>
+
+	<node ns="robot_4" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 0 -y 1 -Y 0 -param robot_description -model robot_4"/>
+
+	<rosparam ns="robot_4" command="load" file="$(find omnino)/config/joint_velocity.yaml" />
+
+	<node
+		ns="robot_4"
+		name="controller_spawner"
+		pkg="controller_manager"
+		type="spawner"
+		respawn="false"
+		output="screen"
+		args="joint_state_controller
+		wheels_velocity_controller"
+	/>
+	<node
+		ns="robot_4"
+		name="odometry"
+		pkg="omnino"
+		type="omnino_odometry"
+		output="screen"
+		args="robot_4"
 	/>
 
 </launch>
