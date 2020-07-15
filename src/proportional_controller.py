@@ -27,7 +27,7 @@ def vel_controll(goal, robot_coordinates, K_p):
     theta = -robot_coordinates[2]                                           #robot orientation
     robot_vel.linear.x = K_p*(error_x*np.cos(theta) - error_y*np.sin(theta))#velocity is given proportional to the error
     robot_vel.linear.y = K_p*(error_x*np.sin(theta) + error_y*np.cos(theta))#and rotated to robot's frame
-    robot_vel.angular.z = K_p*(theta)                                       #adjusting orientation by error between robot and global frame
+    robot_vel.angular.z = K_o*(theta)                                       #adjusting orientation by error between robot and global frame
 
 #############################
 ###### WORLD VARIABLES ######
