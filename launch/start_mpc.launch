@@ -3,9 +3,10 @@
        
     <arg name="goal_x" default="7.0"/>
     <arg name="goal_y" default="7.0"/> 
+    <arg name="goal_z" default="0.0"/> 
 
     <!-- Spawm robot -->
     <node name="mpc_controller" pkg="omnino" type="mpc_controller.py" output="screen"
-        args="$(arg goal_x) $(arg goal_y) 1" />
+        args="$(arg goal_x) $(arg goal_y) $(arg goal_z) 1" />
           
 </launch>

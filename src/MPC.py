@@ -4,7 +4,7 @@ import scipy.sparse as sparse
 
 class MPC:
 
-    def __init__(self, position, v_min, v_max, N, N_c, Ts):
+    def __init__(self, position, v_min, v_max, w_min, w_max, N, N_c, Ts):
         """ MPC-ORCA controller instance
         
         :param goal: Goal position
@@ -13,8 +13,12 @@ class MPC:
         :type position: Numpy Array 2x1
         :param v_min: Lower velocity constraint
         :type v_min: float
+        :param w_min: Lower angular velocity constraint
+        :type w_min: float
         :param v_max: Upper velocity constraint
         :type v_max: float
+        :param w_max: Upper angular velocity constraint
+        :type w_max: float
         :param N: Prediction Horizon
         :type N: int
         :param N_c: Control Horizon
@@ -30,8 +34,8 @@ class MPC:
         self.Ts = Ts
 
         # Linear Dynamics
-        # x = [p_x, p_y, v_x, v_y]'
-        # u = [a_x, a_y]'
+        # x = [p_x, p_y, v_x, v_y, theta_z, w_z]'
+        # u = [a_x, a_y, alpha_z]'
         Ad = sparse.csc_matrix([
             [1.,    0., Ts, 0., 0., 0.],
             [0.,    1., 0., Ts, 0., 0.],
@@ -52,20 +56,20 @@ class MPC:
         [self.nx, self.nu] = Bd.shape
 
         # State constraints
-        xmin = numpy.array([-numpy.inf, -numpy.inf, v_min, v_min])
-        xmax = numpy.array([numpy.inf, numpy.inf, v_max, v_max])
-        umin = numpy.array([v_min/Ts, v_min/Ts])
-        umax = numpy.array([v_max/Ts, v_max/Ts])
+        xmin = numpy.array([-numpy.inf, -numpy.inf, v_min, v_min, -numpy.pi, w_min])
+        xmax = numpy.array([numpy.inf, numpy.inf, v_max, v_max, numpy.pi, w_max])
+        umin = numpy.array([v_min/Ts, v_min/Ts, w_min/Ts])
+        umax = numpy.array([v_max/Ts, v_max/Ts, w_max/Ts])
 
         # Initial state
-        self.x_0 = numpy.array([position[0], position[1], 0., 0.])
+        self.x_0 = numpy.array([position[0], position[1], 0., 0., position[2], 0.])
 
         # Setpoint
         x_r = self.x_0
 
         # MPC objective function
-        Q_0 = sparse.diags([5.0, 5.0, 0.0, 0.0])
-        Q = sparse.diags([5.0, 5.0, 0.0, 0.0])
+        Q_0 = sparse.diags([5.0, 5.0, 0.0, 0.0, 1.0, 0.0])
+        Q = sparse.diags([5.0, 5.0, 0.0, 0.0, 1.0, 0.0])
         R = 0.55 * sparse.eye(self.nu)
 
         # Casting QP format
@@ -119,10 +123,10 @@ class MPC:
         if result.info.status == 'solved':
             # return the first resulting velocity after control action
             #print(result.x[-self.N*self.nu:])
-            return [result.x[(self.nx + 2):(self.nx + 4)], result.x[-self.N*self.nu:-(self.N-1)*self.nu]]
+            return [result.x[(self.nx + 2):(self.nx + 4)], result.x[-self.N*self.nu:-(self.N-1)*self.nu], result.x[self.nx + 5]]
         else:
             print('unsolved')
-            return [numpy.array([self.x_0[2], self.x_0[3]]), numpy.zeros(2)]
+            return [numpy.array([self.x_0[2], self.x_0[3]]), numpy.zeros(2), 0]
             #damping = 0.05
             #return numpy.array([self.agent.velocity[0] - numpy.sign(self.agent.velocity[0])*damping, self.agent.velocity[1] - numpy.sign(self.agent.velocity[1])*damping])
         
