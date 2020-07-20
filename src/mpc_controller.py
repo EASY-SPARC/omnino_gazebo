@@ -27,8 +27,8 @@ def cb_odom(msg):
 
 def velocity_transform(velocity, theta):
     robot_velocity = np.array([0., 0.])
-    robot_velocity[0] = velocity[0]*np.cos(theta) - velocity[1]*np.sin(theta)
-    robot_velocity[1] = velocity[0]*np.sin(theta) + velocity[1]*np.cos(theta)
+    robot_velocity[0] = velocity[0]*np.cos(-theta) - velocity[1]*np.sin(-theta)
+    robot_velocity[1] = velocity[0]*np.sin(-theta) + velocity[1]*np.cos(-theta)
     
     return robot_velocity
 

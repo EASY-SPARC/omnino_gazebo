@@ -68,8 +68,8 @@ class MPC:
         x_r = self.x_0
 
         # MPC objective function
-        Q_0 = sparse.diags([5.0, 5.0, 0.0, 0.0, 1.0, 0.0])
-        Q = sparse.diags([5.0, 5.0, 0.0, 0.0, 1.0, 0.0])
+        Q_0 = sparse.diags([3.0, 3.0, 0.0, 0.0, 1.0, 0.0])
+        Q = sparse.diags([3.0, 3.0, 0.0, 0.0, 1.0, 0.0])
         R = 0.55 * sparse.eye(self.nu)
 
         # Casting QP format
