@@ -4,11 +4,12 @@ import sys
 import rospy
 import numpy as np
 from geometry_msgs.msg import Twist, Vector3
+from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry
 from MPC import MPC
 
 N = 10
-N_c = 5
+N_c = 10
 Ts = 0.1
 X = np.array([0., 0., 0.])
 V = np.array([0., 0., 0.])
@@ -43,9 +44,11 @@ pub = rospy.Publisher('/robot_' + robot + '/cmd_vel', Twist, queue_size=10)
 # Setpoint Publishers
 pub_setpoint_pos = rospy.Publisher('/setpoint_pos', Vector3, queue_size=10)
 pub_setpoint_vel = rospy.Publisher('/setpoint_vel', Vector3, queue_size=10)
+pub_orientation = rospy.Publisher('/orientation', Float64, queue_size=10)
 
 setpoint_pos = Vector3()
 setpoint_vel = Vector3()
+orientation = Float64()
 
 # Initializing Controllers
 controller = MPC(X, V_min, V_max, W_min, W_max, N, N_c, Ts)
@@ -68,14 +71,15 @@ while not rospy.is_shutdown():
     setpoint = np.ravel([np.append(P_des(t + k * Ts), V_des(t + k * Ts)) for k in range(0, N + 1)])
 
     # Updating initial conditions
-    controller.x_0 = np.array([X[0], X[1], V[0], V[1], X[2], V[2]])
+    controller.x_0 = np.array([X[0], X[1], X[2], V[0], V[1], V[2]])
 
     # Computing optimal input values
     [velocity, _, angular] = controller.getNewVelocity(setpoint)
 
-    [setpoint_pos.x, setpoint_pos.y, _] = P_des(t)
+    [setpoint_pos.x, setpoint_pos.y, setpoint_pos.z] = P_des(t)
+    orientation.data = X[2]
 
-    [setpoint_vel.x, setpoint_vel.y, _] = V_des(t)
+    [setpoint_vel.x, setpoint_vel.y, setpoint_vel.z] = V_des(t)
 
     #acc = accelerationTransform(acceleration, vel.linear.x, vel.angular.z, orientation)
     velocity = velocity_transform(velocity, X[2])
@@ -90,6 +94,7 @@ while not rospy.is_shutdown():
 
     pub_setpoint_pos.publish(setpoint_pos)
     pub_setpoint_vel.publish(setpoint_vel)
+    pub_orientation.publish(orientation)
     rospy.sleep(Ts)
 
     t += Ts

@@ -37,39 +37,39 @@ class MPC:
         # x = [p_x, p_y, v_x, v_y, theta_z, w_z]'
         # u = [a_x, a_y, alpha_z]'
         Ad = sparse.csc_matrix([
-            [1.,    0., Ts, 0., 0., 0.],
-            [0.,    1., 0., Ts, 0., 0.],
-            [0.,    0., 1., 0., 0., 0.],
+            [1.,    0., 0., Ts, 0., 0.],
+            [0.,    1., 0., 0., Ts, 0.],
+            [0.,    0., 1., 0., 0., Ts],
             [0.,    0., 0., 1., 0., 0.],
-            [0.,    0., 0., 0., 1., Ts],
+            [0.,    0., 0., 0., 1., 0.],
             [0.,    0., 0., 0., 0., 1.]
         ])
 
         Bd = sparse.csc_matrix([
             [0.5 * Ts ** 2, 0.,                        0.],
             [0.,            0.5 * Ts ** 2,             0.],
+            [0.,            0.,             0.5 * Ts ** 2],
             [Ts,            0.,                        0.],
             [0.,            Ts,                        0.],
-            [0.,            0.,             0.5 * Ts ** 2],
             [0.,            0.,                        Ts]
         ])
         [self.nx, self.nu] = Bd.shape
 
         # State constraints
-        xmin = numpy.array([-numpy.inf, -numpy.inf, v_min, v_min, -numpy.pi, w_min])
-        xmax = numpy.array([numpy.inf, numpy.inf, v_max, v_max, numpy.pi, w_max])
+        xmin = numpy.array([-numpy.inf, -numpy.inf, -numpy.pi, v_min, v_min, w_min])
+        xmax = numpy.array([numpy.inf, numpy.inf, numpy.pi, v_max, v_max, w_max])
         umin = numpy.array([v_min/Ts, v_min/Ts, w_min/Ts])
         umax = numpy.array([v_max/Ts, v_max/Ts, w_max/Ts])
 
         # Initial state
-        self.x_0 = numpy.array([position[0], position[1], 0., 0., position[2], 0.])
+        self.x_0 = numpy.array([position[0], position[1], position[2], 0., 0., 0.])
 
         # Setpoint
         x_r = self.x_0
 
         # MPC objective function
-        Q_0 = sparse.diags([3.0, 3.0, 0.0, 0.0, 1.0, 0.0])
-        Q = sparse.diags([3.0, 3.0, 0.0, 0.0, 1.0, 0.0])
+        Q_0 = sparse.diags([3.0, 3.0, 1.0, 0.0, 0.0, 0.0])
+        Q = sparse.diags([3.0, 3.0, 1.0, 0.0, 0.0, 0.0])
         R = 0.55 * sparse.eye(self.nu)
 
         # Casting QP format
@@ -123,10 +123,10 @@ class MPC:
         if result.info.status == 'solved':
             # return the first resulting velocity after control action
             #print(result.x[-self.N*self.nu:])
-            return [result.x[(self.nx + 2):(self.nx + 4)], result.x[-self.N*self.nu:-(self.N-1)*self.nu], result.x[self.nx + 5]]
+            return [result.x[(self.nx + 3):(self.nx + 5)], result.x[-self.N*self.nu:-(self.N-1)*self.nu], result.x[self.nx + 5]]
         else:
             print('unsolved')
-            return [numpy.array([self.x_0[2], self.x_0[3]]), numpy.zeros(2), 0]
+            return [numpy.array([self.x_0[3], self.x_0[4]]), numpy.zeros(2), 0]
             #damping = 0.05
             #return numpy.array([self.agent.velocity[0] - numpy.sign(self.agent.velocity[0])*damping, self.agent.velocity[1] - numpy.sign(self.agent.velocity[1])*damping])
         
