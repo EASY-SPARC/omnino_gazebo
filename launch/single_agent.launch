@@ -42,5 +42,16 @@
 		output="screen"
 		args="robot_1"
 	/>
+
+	<node ns="robot_1" name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher" args="-param robot_description"/>
+	<node ns="robot_1" pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" args="-param robot_description">
+        <param name="publish_frequency" type="double" value="30.0" />
+    </node>
+
+	<arg name="rvizconfig" default="$(find urdf_tutorial)/rviz/urdf.rviz" />
+	<node ns="robot_1" name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+
+
+
 	
 </launch>
