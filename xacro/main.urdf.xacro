@@ -7,6 +7,7 @@
 	<xacro:include filename="$(find omnino)/xacro/socket.urdf.xacro"/>
 	<xacro:property name="base_r" value="${0.063}" />
 	<link name="origin_link"/>
+	<link name="map"/>
 	<link name="base_link">
 		<inertial>
 			<mass value="0.7862944645"/>
@@ -36,6 +37,13 @@
 		<parent link="origin_link" />
 		<child link="base_link" />
 		<origin xyz="0 0 0.0175" rpy="0 0 ${-pi/2}"/>
+	</joint>
+	<joint
+		name="map_joint"
+		type="fixed">
+		<parent link="origin_link" />
+		<child link="map" />
+		<origin xyz="0 0 0" rpy="0 0 0"/>
 	</joint>
 
 	<xacro:layer1
@@ -70,6 +78,61 @@
 	<gazebo>
 		<plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
 		</plugin>
+	</gazebo>
+
+	<!-- Laser Scan -->
+	<link name="hokuyo_link">
+		<collision>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size="0.1 0.1 0.1"/>
+			</geometry>
+		</collision>
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<geometry>
+				<box size="0.1 0.1 0.1"/>
+			</geometry>
+		</visual>
+		<inertial>
+			<mass value="1e-5" />
+			<origin xyz="0 0 0" rpy="0 0 0"/>
+			<inertia ixx="1e-6" ixy="0" ixz="0" iyy="1e-6" iyz="0" izz="1e-6" />
+		</inertial>
+	</link>
+
+	<joint name="hokuyo_joint" type="fixed">
+		<axis xyz="0 1 0" />
+		<origin xyz="0 0 0.2" rpy="0 0 0"/>
+		<parent link="origin_link"/>
+		<child link="hokuyo_link"/>
+	</joint>
+
+	<gazebo reference="hokuyo_link">
+		<sensor type="gpu_ray" name="hokuyo">
+			<pose>0 0 0 0 0 0</pose>
+			<visualize>false</visualize>
+			<update_rate>40</update_rate>
+			<ray>
+				<scan>
+					<horizontal>
+						<samples>720</samples>
+						<resolution>1</resolution>
+						<min_angle>-1.570796</min_angle>
+						<max_angle>1.570796</max_angle>
+					</horizontal>
+				</scan>
+				<range>
+					<min>0.10</min>
+					<max>30.0</max>
+					<resolution>0.01</resolution>
+				</range>
+			</ray>
+			<plugin name="gpu_laser" filename="libgazebo_ros_gpu_laser.so">
+				<topicName>/scan</topicName>
+				<frameName>hokuyo_link</frameName>
+			</plugin>
+		</sensor>
 	</gazebo>
 
 </robot>

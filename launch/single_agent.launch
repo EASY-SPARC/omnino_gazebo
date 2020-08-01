@@ -48,10 +48,12 @@
         <param name="publish_frequency" type="double" value="30.0" />
     </node>
 
-	<arg name="rvizconfig" default="$(find urdf_tutorial)/rviz/urdf.rviz" />
-	<node ns="robot_1" name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" />
+	<!--arg name="rvizconfig" default="$(find urdf_tutorial)/rviz/urdf.rviz" />
+	<node ns="robot_1" name="rviz" pkg="rviz" type="rviz" args="-d $(arg rvizconfig)" required="true" /-->
 
-
+  	<!-- Run the map server >
+ 	<arg name="map_file" default="$(find omnino)/maps/jackal_race.yaml"/>
+ 	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" /-->
 
 	
 </launch>
