@@ -81,7 +81,7 @@
 	</gazebo>
 
 	<!-- Laser Scan -->
-	<link name="hokuyo_link">
+	<link name="/robot_1/hokuyo_link">
 		<collision>
 			<origin xyz="0 0 0" rpy="0 0 0"/>
 			<geometry>
@@ -104,12 +104,12 @@
 	<joint name="hokuyo_joint" type="fixed">
 		<axis xyz="0 1 0" />
 		<origin xyz="0 0 0.2" rpy="0 0 0"/>
-		<parent link="origin_link"/>
-		<child link="hokuyo_link"/>
+		<parent link="base_link"/>
+		<child link="/robot_1/hokuyo_link"/>
 	</joint>
 
-	<gazebo reference="hokuyo_link">
-		<sensor type="gpu_ray" name="hokuyo">
+	<gazebo reference="/robot_1/hokuyo_link">
+		<sensor type="ray" name="hokuyo">
 			<pose>0 0 0 0 0 0</pose>
 			<visualize>false</visualize>
 			<update_rate>40</update_rate>
@@ -128,9 +128,10 @@
 					<resolution>0.01</resolution>
 				</range>
 			</ray>
-			<plugin name="gpu_laser" filename="libgazebo_ros_gpu_laser.so">
+			<plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
 				<topicName>/scan</topicName>
 				<frameName>hokuyo_link</frameName>
+           	 		<robotNamespace>robot_1</robotNamespace>
 			</plugin>
 		</sensor>
 	</gazebo>
