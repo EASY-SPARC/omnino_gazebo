@@ -129,7 +129,7 @@
 				</range>
 			</ray>
 			<plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
-				<topicName>/scan</topicName>
+				<topicName>front/scan</topicName>
 				<frameName>hokuyo_link</frameName>
            	 		<robotNamespace>robot_1</robotNamespace>
 			</plugin>
