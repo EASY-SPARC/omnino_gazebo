@@ -7,7 +7,7 @@
 	<xacro:include filename="$(find omnino)/xacro/socket.urdf.xacro"/>
 	<xacro:property name="base_r" value="${0.063}" />
 	<link name="origin_link"/>
-	<link name="map"/>
+	<!--link name="map"/-->
 	<link name="base_link">
 		<inertial>
 			<mass value="0.7862944645"/>
@@ -38,13 +38,13 @@
 		<child link="base_link" />
 		<origin xyz="0 0 0.0175" rpy="0 0 ${-pi/2}"/>
 	</joint>
-	<joint
+	<!--joint
 		name="map_joint"
 		type="fixed">
 		<parent link="origin_link" />
 		<child link="map" />
 		<origin xyz="0 0 0" rpy="0 0 0"/>
-	</joint>
+	</joint-->
 
 	<xacro:layer1
 		height="0.025"/>
@@ -81,7 +81,7 @@
 	</gazebo>
 
 	<!-- Laser Scan -->
-	<link name="/robot_1/hokuyo_link">
+	<link name="hokuyo_link">
 		<collision>
 			<origin xyz="0 0 0" rpy="0 0 0"/>
 			<geometry>
@@ -105,10 +105,10 @@
 		<axis xyz="0 1 0" />
 		<origin xyz="0 0 0.2" rpy="0 0 0"/>
 		<parent link="base_link"/>
-		<child link="/robot_1/hokuyo_link"/>
+		<child link="hokuyo_link"/>
 	</joint>
 
-	<gazebo reference="/robot_1/hokuyo_link">
+	<gazebo reference="hokuyo_link">
 		<sensor type="ray" name="hokuyo">
 			<pose>0 0 0 0 0 0</pose>
 			<visualize>false</visualize>
@@ -129,8 +129,8 @@
 				</range>
 			</ray>
 			<plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
-				<topicName>front/scan</topicName>
-				<frameName>hokuyo_link</frameName>
+				<topicName>scan</topicName>
+				<frameName>/hokuyo_link</frameName>
            	 		<robotNamespace>robot_1</robotNamespace>
 			</plugin>
 		</sensor>
