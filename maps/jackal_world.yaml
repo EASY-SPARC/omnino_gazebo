@@ -1,4 +1,4 @@
-image: /home/vangasse/catkin_ws/src/omnino_gazebo/maps/jackal_world.pgm
+image: jackal_world.pgm
 resolution: 0.020000
 origin: [-10.000000, -10.000000, 0.000000]
 negate: 0
