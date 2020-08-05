@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <launch>
        
-    <arg name="goal_x" default="7.0"/>
-    <arg name="goal_y" default="7.0"/> 
-    <arg name="goal_z" default="0.0"/> 
+    <arg name="goal_x" default="3.0"/>
+    <arg name="goal_y" default="3.0"/> 
+    <arg name="goal_z" default="-3.0"/> 
 
     <!-- Spawm robot -->
     <node name="mpc_controller" pkg="omnino" type="mpc_controller.py" output="screen"
