@@ -15,13 +15,13 @@
 		<arg name="world_name" value="$(arg world_name)"/>
 	</include>
 
-	<!--spawm agent 1-->
+	<!--Spawn Agent-->
 
 	<param name="robot_1/robot_description" command="$(find xacro)/xacro '$(find omnino)/xacro/main.urdf.xacro'"/>
 
 	<node name="inv_kine" pkg="omnino" type="inv_kine.py" output="screen" args="1"/>
 	
-    	<node ns="robot_1" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 0 -y 0 -Y 0 -param robot_description -model robot_1"/>
+    <node ns="robot_1" name="omnino_spawner" pkg="gazebo_ros" type="spawn_model" args="-urdf -model robot -x 0 -y 0 -Y 0 -param robot_description -model robot_1"/>
 
 	<rosparam ns="robot_1" command="load" file="$(find omnino)/config/joint_velocity.yaml" />
 
@@ -49,14 +49,13 @@
         <param name="publish_frequency" type="double" value="30.0" />
     </node>
 
-    <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 world map 100"/>
-    <node pkg="tf" type="static_transform_publisher" name="base_broadcaster" args="0 0 0 0 0 0 1 odom origin_link 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 world map 25"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_broadcaster" args="0 0 0 0 0 0 1 odom origin_link 25"/>
 	
   	<!-- Run the map server -->
  	<arg name="map_file" default="$(find omnino)/maps/jackal_race.yaml"/>
  	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
-	<!--include file="$(find amcl)/examples/amcl_diff.launch"/-->
-	<!--include file="$(find omnino)/launch/amcl.launch" /-->
+    
 	<node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
 		<rosparam file="$(find omnino)/params/costmap_common_params.yaml" command="load" ns="global_costmap" />
 		<rosparam file="$(find omnino)/params/costmap_common_params.yaml" command="load" ns="local_costmap" />
