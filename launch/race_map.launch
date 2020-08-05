@@ -49,7 +49,8 @@
         <param name="publish_frequency" type="double" value="30.0" />
     </node>
 
-    <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 odom map 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="map_broadcaster" args="0 0 0 0 0 0 1 world map 100"/>
+    <node pkg="tf" type="static_transform_publisher" name="base_broadcaster" args="0 0 0 0 0 0 1 odom origin_link 100"/>
 	
   	<!-- Run the map server -->
  	<arg name="map_file" default="$(find omnino)/maps/jackal_race.yaml"/>

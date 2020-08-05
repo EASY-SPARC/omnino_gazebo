@@ -45,7 +45,7 @@ class odometryGroup {
         last_time = ros::Time::now();
         
         odom.header.stamp = current_time;
-        odom.header.frame_id = "odom";
+        odom.header.frame_id = "world";
 
         pose_msg = input->pose[i];
         twist_msg = input->twist[i];
@@ -53,8 +53,8 @@ class odometryGroup {
         //first, we'll publish the transform over tf
         geometry_msgs::TransformStamped odom_trans;
         odom_trans.header.stamp = current_time;
-        odom_trans.header.frame_id = "odom";
-        odom_trans.child_frame_id = "origin_link";
+        odom_trans.header.frame_id = "world";
+        odom_trans.child_frame_id = "odom";
 
         odom_trans.transform.translation.x = pose_msg.position.x;
         odom_trans.transform.translation.y = pose_msg.position.y;
@@ -71,7 +71,7 @@ class odometryGroup {
         odom.pose.pose.orientation = pose_msg.orientation;
 
         //set the velocity
-        odom.child_frame_id = "origin_link";
+        odom.child_frame_id = "odom";
         odom.twist.twist.linear.x = twist_msg.linear.x;
         odom.twist.twist.linear.y = twist_msg.linear.x;
         odom.twist.twist.angular.z = twist_msg.angular.x;
