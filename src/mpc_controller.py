@@ -5,11 +5,11 @@ import rospy
 import numpy as np
 from geometry_msgs.msg import Twist, Vector3
 from std_msgs.msg import Float64
-from nav_msgs.msg import Odometry
+from nav_msgs.msg import Odometry, Path
 from MPC import MPC
 
-N = 10
-N_c = 10
+N = 5
+N_c = 5
 Ts = 0.1
 X = np.array([0., 0., 0.])
 V = np.array([0., 0., 0.])
@@ -20,11 +20,16 @@ W_max = 0.3
 
 goal = np.array([float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3])])
 robot = sys.argv[4]
+setpoint = np.zeros((N+1)*6)
 
 def cb_odom(msg):
     X[0] = msg.pose.pose.position.x
     X[1] = msg.pose.pose.position.y
     X[2] = np.arctan2(2 * float(msg.pose.pose.orientation.w) * float(msg.pose.pose.orientation.z), 1 - 2 * float(msg.pose.pose.orientation.z)**2)
+
+def cb_path(msg):
+    setpoint = np.ravel([np.append(np.array([msg.poses[-1].pose.position.x, msg.poses[-1].pose.position.y, 0.], dtype=float), np.array([0., 0., 0.], dtype=float)) for k in range(0, N+1)])
+    print (setpoint)
 
 def velocity_transform(velocity, theta):
     robot_velocity = np.array([0., 0.])
@@ -35,8 +40,13 @@ def velocity_transform(velocity, theta):
 
 rospy.init_node('mpc_controller')
 
+# Waiting gazebo first message
+data = rospy.wait_for_message('/move_base/TrajectoryPlannerROS/global_plan', Path)
+cb_path(data)
+
 # Subscribing on model_states instead of robot/odom, to avoid unnecessary noise
 rospy.Subscriber('/robot_'+robot+'/odom', Odometry, cb_odom)
+rospy.Subscriber('/move_base/TrajectoryPlannerROS/global_plan', Path, cb_path)
 
 # Velocity publishers
 pub = rospy.Publisher('/robot_' + robot + '/cmd_vel', Twist, queue_size=10)
@@ -66,9 +76,9 @@ t = 0
 vel = Twist()
 
 while not rospy.is_shutdown():
-
+    
     # Updating setpoint trajectory
-    setpoint = np.ravel([np.append(P_des(t + k * Ts), V_des(t + k * Ts)) for k in range(0, N + 1)])
+    #setpoint = np.ravel([np.append(P_des(t + k * Ts), V_des(t + k * Ts)) for k in range(0, N + 1)])
 
     # Updating initial conditions
     controller.x_0 = np.array([X[0], X[1], X[2], V[0], V[1], V[2]])

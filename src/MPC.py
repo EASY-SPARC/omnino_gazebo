@@ -70,7 +70,7 @@ class MPC:
         # MPC objective function
         Q_0 = sparse.diags([3.0, 3.0, 1.0, 0.0, 0.0, 0.0])
         Q = sparse.diags([3.0, 3.0, 1.0, 0.0, 0.0, 0.0])
-        R = 0.55 * sparse.eye(self.nu)
+        R = 0.00000000055 * sparse.eye(self.nu)
 
         # Casting QP format
         # QP objective
