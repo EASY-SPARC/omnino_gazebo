@@ -8,8 +8,8 @@ from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry, Path
 from MPC import MPC
 
-N = 10
-N_c = 10
+N = 50
+N_c = 50
 Ts = 0.1
 X = np.array([0., 0., 0.])
 V = np.array([0., 0., 0.])
@@ -29,10 +29,10 @@ def cb_odom(msg):
     X[1] = msg.pose.pose.position.y
     X[2] = np.arctan2(2 * float(msg.pose.pose.orientation.w) * float(msg.pose.pose.orientation.z), 1 - 2 * float(msg.pose.pose.orientation.z)**2)
 
-#(len(msg.poses)/2)/N)
+#(len(msg.poses)/2)/N)    int((len(msg.poses)/2)+k*10)
 def cb_path(msg):
     global setpoint
-    setpoint = np.ravel([np.append(np.array([msg.poses[int((len(msg.poses)/2)+k*10)].pose.position.x, msg.poses[int((len(msg.poses)/2)+k*10)].pose.position.y, 0.], dtype=float), np.array([0., 0., 0.], dtype=float)) for k in range(0, N+1)])
+    setpoint = np.ravel([np.append(np.array([msg.poses[k*(len(msg.poses)-1)/N].pose.position.x, msg.poses[k*(len(msg.poses)-1)/N].pose.position.y, 0.], dtype=float), np.array([0., 0., 0.], dtype=float)) for k in range(0, N+1)])
     #print (setpoint)
 
 def velocity_transform(velocity, theta):
