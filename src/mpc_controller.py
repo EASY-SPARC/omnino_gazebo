@@ -17,10 +17,11 @@ V_min = -5
 V_max = 5
 W_min = -0.3
 W_max = 0.3
+nx = 6                      #size of a state
 
 goal = np.array([float(sys.argv[1]), float(sys.argv[2]), float(sys.argv[3])])
 robot = sys.argv[4]
-setpoint = np.zeros((N+1)*6)
+setpoint = np.zeros((N+1)*nx)
 
 DEBUG = False
 
@@ -29,11 +30,12 @@ def cb_odom(msg):
     X[1] = msg.pose.pose.position.y
     X[2] = np.arctan2(2 * float(msg.pose.pose.orientation.w) * float(msg.pose.pose.orientation.z), 1 - 2 * float(msg.pose.pose.orientation.z)**2)
 
-#(len(msg.poses)/2)/N)    int((len(msg.poses)/2)+k*10)
+#k*(len(msg.poses)-1)/N working     50 + k*(len(msg.poses)-51)/N
 def cb_path(msg):
     global setpoint
-    setpoint = np.ravel([np.append(np.array([msg.poses[k*(len(msg.poses)-1)/N].pose.position.x, msg.poses[k*(len(msg.poses)-1)/N].pose.position.y, 0.], dtype=float), np.array([0., 0., 0.], dtype=float)) for k in range(0, N+1)])
-    #print (setpoint)
+    setpoint = np.ravel([np.append(np.array([msg.poses[k*(len(msg.poses)-1)/N].pose.position.x*np.cos(X[2]) - msg.poses[k*(len(msg.poses)-1)/N].pose.position.y*np.sin(X[2]) + X[0], msg.poses[k*(len(msg.poses)-1)/N].pose.position.y*np.cos(X[2]) + msg.poses[k*(len(msg.poses)-1)/N].pose.position.x*np.sin(X[2]) + X[1], 0.], dtype=float), np.array([0., 0., 0.], dtype=float)) for k in range(0, N+1)])
+    #print (msg.header.seq)
+    #print("AQUI")
 
 def velocity_transform(velocity, theta):
     robot_velocity = np.array([0., 0.])
@@ -87,6 +89,9 @@ while not rospy.is_shutdown():
     # Updating setpoint trajectory
     if DEBUG:
     	setpoint = np.ravel([np.append(P_des(t + k * Ts), V_des(t + k * Ts)) for k in range(0, N + 1)])
+    else:
+        for k in range(0,N):
+            setpoint[k*nx:(k+1)*nx] = setpoint[(k+1)*nx:(k+2)*nx]
 
     # Updating initial conditions
     controller.x_0 = np.array([X[0], X[1], X[2], V[0], V[1], V[2]])
