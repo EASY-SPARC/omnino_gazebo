@@ -8,8 +8,8 @@ from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry, Path
 from MPC import MPC
 
-N = 50
-N_c = 50
+N = 10
+N_c = 10
 Ts = 0.1
 X = np.array([0., 0., 0.])
 V = np.array([0., 0., 0.])
@@ -30,10 +30,14 @@ def cb_odom(msg):
     X[1] = msg.pose.pose.position.y
     X[2] = np.arctan2(2 * float(msg.pose.pose.orientation.w) * float(msg.pose.pose.orientation.z), 1 - 2 * float(msg.pose.pose.orientation.z)**2)
 
-#k*(len(msg.poses)-1)/N working     50 + k*(len(msg.poses)-51)/N
+#k*(len(msg.poses)-1)/N working     50 + k*(len(msg.poses)-51)/N    k*(len(msg.poses)-1)/N
 def cb_path(msg):
     global setpoint
-    setpoint = np.ravel([np.append(np.array([msg.poses[k*(len(msg.poses)-1)/N].pose.position.x*np.cos(X[2]) - msg.poses[k*(len(msg.poses)-1)/N].pose.position.y*np.sin(X[2]) + X[0], msg.poses[k*(len(msg.poses)-1)/N].pose.position.y*np.cos(X[2]) + msg.poses[k*(len(msg.poses)-1)/N].pose.position.x*np.sin(X[2]) + X[1], 0.], dtype=float), np.array([0., 0., 0.], dtype=float)) for k in range(0, N+1)])
+    sub_sampling = 5
+    if len(msg.poses) > sub_sampling*N:
+        setpoint = np.ravel([np.append(np.array([msg.poses[sub_sampling*k].pose.position.x, msg.poses[sub_sampling*k].pose.position.y, 0.], dtype=float), np.array([0., 0., 0.], dtype=float)) for k in range(0, N+1)])
+    else:
+        setpoint = np.ravel([np.append(np.array([msg.poses[-1].pose.position.x, msg.poses[-1].pose.position.y, 0.], dtype=float), np.array([0., 0., 0.], dtype=float)) for k in range(0, N+1)])
     #print (msg.header.seq)
     #print("AQUI")
 
@@ -58,14 +62,14 @@ t = 0
 rospy.init_node('mpc_controller')
 
 if not DEBUG:
-	# Waiting gazebo first message
-	data = rospy.wait_for_message('/move_base/TrajectoryPlannerROS/global_plan', Path)
+	# Waiting gazebo first message /move_base/TrajectoryPlannerROS/global_plan
+	data = rospy.wait_for_message('/move_base/NavfnROS/plan', Path)
 	cb_path(data)
 
 # Subscribing on model_states instead of robot/odom, to avoid unnecessary noise
 rospy.Subscriber('/robot_'+robot+'/odom', Odometry, cb_odom)
 if not DEBUG:
-	rospy.Subscriber('/move_base/TrajectoryPlannerROS/global_plan', Path, cb_path)
+	rospy.Subscriber('/move_base/NavfnROS/plan', Path, cb_path)
 
 # Velocity publishers
 pub = rospy.Publisher('/robot_' + robot + '/cmd_vel', Twist, queue_size=10)
