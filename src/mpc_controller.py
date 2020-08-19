@@ -9,24 +9,30 @@ from std_msgs.msg import Float64
 from nav_msgs.msg import Odometry, Path
 from MPC import MPC
 
+# Horizon Length
 N = 10
 N_c = 10
-Ts = 0.02
+
+# Time and Sample Time
 t = 0
+Ts = 0.02
+
+# State Variables
 X = np.array([0., 0., 0.])
 V = np.array([0., 0., 0.])
+# State Vector Size
+nx = 6
+
+# Constraints
 V_min = -5
 V_max = 5
 W_min = -0.3
 W_max = 0.3
-nx = 6                      #size of a state
 
 goal = np.zeros(3)
 robot = sys.argv[1]
 path = Path()
 setpoint = np.zeros((N+1)*nx)
-
-DEBUG = False
 
 def cb_odom(msg):
     X[0] = msg.pose.pose.position.x
@@ -34,8 +40,7 @@ def cb_odom(msg):
     X[2] = np.arctan2(2 * float(msg.pose.pose.orientation.w) * float(msg.pose.pose.orientation.z), 1 - 2 * float(msg.pose.pose.orientation.z)**2)
 
 def cb_goal(msg):
-    global V_des, path
-    sub_sampling = 5
+    global V_des
     
     path = Path()
 
@@ -57,9 +62,7 @@ def cb_goal(msg):
     t = 0
 
     data = rospy.wait_for_message('/move_base/NavfnROS/plan', Path)
-    for k in range(0,len(data.poses),sub_sampling):
-        path.poses.append(data.poses[k])
-    path.poses[-1] = data.poses[-1]
+    cb_path(data)
  
     #setpoint = np.ravel([np.append(np.array([msg.poses[sub_sampling*k].pose.position.x, msg.poses[sub_sampling*k].pose.position.y, 0.], dtype=float), V_des(t + k * Ts)) for k in range(0, N+1)])
 
@@ -128,15 +131,8 @@ while not rospy.is_shutdown():
             setpoint[k][:] = np.array([path.poses[k].pose.position.x, path.poses[k].pose.position.y, 0., V_des(t + k * Ts)[0], V_des(t + k * Ts)[1], V_des(t + k * Ts)[2]])
     setpoint = np.ravel(setpoint)
     
-    
-    if len(path.poses) > 1 and c_test >= 0:
+    if len(path.poses) > 1:
         path.poses.pop(0)
-        c_test = 0
-    else:
-        c_test += 1
-    #setpoint = np.ravel([np.append(np.array([path.poses[k].pose.position.x, path.poses[k].pose.position.y, 0.], dtype=float), V_des(t + k * Ts)) ])
-    #for k in range(0,N):
-    	#setpoint[k*nx:(k+1)*nx] = setpoint[(k+1)*nx:(k+2)*nx]
 
     # Updating initial conditions
     controller.x_0 = np.array([X[0], X[1], X[2], V[0], V[1], V[2]])
