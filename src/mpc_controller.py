@@ -11,7 +11,7 @@ from MPC import MPC
 
 N = 10
 N_c = 10
-Ts = 0.1
+Ts = 0.02
 t = 0
 X = np.array([0., 0., 0.])
 V = np.array([0., 0., 0.])
@@ -36,6 +36,8 @@ def cb_odom(msg):
 def cb_goal(msg):
     global V_des, path
     sub_sampling = 5
+    
+    path = Path()
 
     goal[0] = msg.goal.target_pose.pose.position.x
     goal[1] = msg.goal.target_pose.pose.position.y
@@ -61,6 +63,17 @@ def cb_goal(msg):
  
     #setpoint = np.ravel([np.append(np.array([msg.poses[sub_sampling*k].pose.position.x, msg.poses[sub_sampling*k].pose.position.y, 0.], dtype=float), V_des(t + k * Ts)) for k in range(0, N+1)])
 
+def cb_path(msg):
+    global path
+    sub_sampling = 5
+    
+    path = Path()
+    
+    for k in range(0,len(msg.poses),sub_sampling):
+        path.poses.append(msg.poses[k])
+    path.poses[-1] = msg.poses[-1]
+    
+
 def velocity_transform(velocity, theta):
     robot_velocity = np.array([0., 0.])
     robot_velocity[0] = velocity[0]*np.cos(-theta) - velocity[1]*np.sin(-theta)
@@ -83,7 +96,7 @@ rospy.Subscriber('/robot_'+robot+'/odom', Odometry, cb_odom)
 rospy.Subscriber('/move_base/goal', MoveBaseActionGoal, cb_goal)
 
 # Subscribing to full path
-#rospy.Subscriber('/move_base/NavfnROS/plan', Path, cb_path)
+rospy.Subscriber('/move_base/NavfnROS/plan', Path, cb_path)
 
 # Velocity publishers
 pub = rospy.Publisher('/robot_' + robot + '/cmd_vel', Twist, queue_size=10)
@@ -102,19 +115,25 @@ controller = MPC(X, V_min, V_max, W_min, W_max, N, N_c, Ts)
 
 vel = Twist()
 
+c_test = 0
+
 while not rospy.is_shutdown():
     
     # Updating setpoint trajectory
     setpoint = np.zeros((N+1,nx))
     for k in range(0, N+1):
         if k >= len(path.poses):
-            setpoint[k][:] = np.array([path.poses[-1].pose.position.x, path.poses[-1].pose.position.y, 0., V_des(t + k * Ts)[0], V_des(t + k * Ts)[1], V_des(t + k * Ts)[2]])
+            setpoint[k][:] = np.array([goal[0], goal[1], goal[2], V_des(t + k * Ts)[0], V_des(t + k * Ts)[1], V_des(t + k * Ts)[2]])
         else:
             setpoint[k][:] = np.array([path.poses[k].pose.position.x, path.poses[k].pose.position.y, 0., V_des(t + k * Ts)[0], V_des(t + k * Ts)[1], V_des(t + k * Ts)[2]])
     setpoint = np.ravel(setpoint)
     
-    if len(path.poses) > 1:
+    
+    if len(path.poses) > 1 and c_test >= 0:
         path.poses.pop(0)
+        c_test = 0
+    else:
+        c_test += 1
     #setpoint = np.ravel([np.append(np.array([path.poses[k].pose.position.x, path.poses[k].pose.position.y, 0.], dtype=float), V_des(t + k * Ts)) ])
     #for k in range(0,N):
     	#setpoint[k*nx:(k+1)*nx] = setpoint[(k+1)*nx:(k+2)*nx]
@@ -142,6 +161,7 @@ while not rospy.is_shutdown():
     pub_setpoint_pos.publish(setpoint_pos)
     pub_setpoint_vel.publish(setpoint_vel)
     pub_orientation.publish(orientation)
+    
     rospy.sleep(Ts)
 
     t += Ts
