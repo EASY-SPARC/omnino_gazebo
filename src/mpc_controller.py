@@ -34,10 +34,11 @@ def cb_odom(msg):
     X[2] = np.arctan2(2 * float(msg.pose.pose.orientation.w) * float(msg.pose.pose.orientation.z), 1 - 2 * float(msg.pose.pose.orientation.z)**2)
 
 def cb_goal(msg):
-	global V_des
+    global V_des, path
+    sub_sampling = 5
 
-	goal[0] = msg.goal.target_pose.pose.position.x
-	goal[1] = msg.goal.target_pose.pose.position.y
+    goal[0] = msg.goal.target_pose.pose.position.x
+    goal[1] = msg.goal.target_pose.pose.position.y
 	#msg.goal.target_pose.pose.position.z
 	#msg.goal.target_pose.pose.orientation.x
 	#msg.goal.target_pose.pose.orientation.y
@@ -45,24 +46,18 @@ def cb_goal(msg):
 	#msg.goal.target_pose.pose.orientation.w
 
 	# Trajectory planning
-	initial = np.copy(X)
-	t0 = 5.0
-	growth = 1
-	logistic = lambda t: 1/(1 + np.exp(- growth * (t - t0)))
-	d_logistic = lambda t: growth * logistic(t) * (1 - logistic(t))
-	V_des = lambda t: goal * d_logistic(t) - initial * d_logistic(t)
-	t = 0
+    initial = np.copy(X)
+    t0 = 5.0
+    growth = 1
+    logistic = lambda t: 1/(1 + np.exp(- growth * (t - t0)))
+    d_logistic = lambda t: growth * logistic(t) * (1 - logistic(t))
+    V_des = lambda t: goal * d_logistic(t) - initial * d_logistic(t)
+    t = 0
 
-	data = rospy.wait_for_message('/move_base/NavfnROS/plan', Path)
-	cb_path(data)
-
-def cb_path(msg):
-    global path
-    sub_sampling = 5
-
-    for k in range(0,len(msg.poses),sub_sampling):
-        path.poses.append(msg.poses[k])
-    path.poses[-1] = msg.poses[-1]
+    data = rospy.wait_for_message('/move_base/NavfnROS/plan', Path)
+    for k in range(0,len(data.poses),sub_sampling):
+        path.poses.append(data.poses[k])
+    path.poses[-1] = data.poses[-1]
  
     #setpoint = np.ravel([np.append(np.array([msg.poses[sub_sampling*k].pose.position.x, msg.poses[sub_sampling*k].pose.position.y, 0.], dtype=float), V_des(t + k * Ts)) for k in range(0, N+1)])
 
@@ -110,8 +105,17 @@ vel = Twist()
 while not rospy.is_shutdown():
     
     # Updating setpoint trajectory
-    setpoint = np.ravel([np.append(np.array([path.poses[k].pose.position.x, path.poses[k].pose.position.y, 0.], dtype=float), V_des(t + k * Ts)) for k in range(0, N+1)])
-    print(path.poses.pop(0), ">>" , path.poses[-1])
+    setpoint = np.zeros((N+1,nx))
+    for k in range(0, N+1):
+        if k >= len(path.poses):
+            setpoint[k][:] = np.array([path.poses[-1].pose.position.x, path.poses[-1].pose.position.y, 0., V_des(t + k * Ts)[0], V_des(t + k * Ts)[1], V_des(t + k * Ts)[2]])
+        else:
+            setpoint[k][:] = np.array([path.poses[k].pose.position.x, path.poses[k].pose.position.y, 0., V_des(t + k * Ts)[0], V_des(t + k * Ts)[1], V_des(t + k * Ts)[2]])
+    setpoint = np.ravel(setpoint)
+    
+    if len(path.poses) > 1:
+        path.poses.pop(0)
+    #setpoint = np.ravel([np.append(np.array([path.poses[k].pose.position.x, path.poses[k].pose.position.y, 0.], dtype=float), V_des(t + k * Ts)) ])
     #for k in range(0,N):
     	#setpoint[k*nx:(k+1)*nx] = setpoint[(k+1)*nx:(k+2)*nx]
 
